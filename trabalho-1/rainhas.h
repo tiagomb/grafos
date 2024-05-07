@@ -9,10 +9,6 @@ typedef struct casa {
   unsigned int linha, coluna;
 } casa;
 
-int ehPossivel (unsigned int *r, unsigned int linha, unsigned int coluna, casa *c, unsigned int k);
-
-unsigned int acha_linha (unsigned int *r, unsigned int n);
-
 //------------------------------------------------------------------------------
 // computa uma resposta para a instância (n,c) do problema das n rainhas 
 // com casas proibidas usando backtracking

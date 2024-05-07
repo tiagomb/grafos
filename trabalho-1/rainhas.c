@@ -1,5 +1,6 @@
 #include "rainhas.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 //------------------------------------------------------------------------------
 // computa uma resposta para a instância (n,c) do problema das n rainhas 
@@ -14,6 +15,8 @@
 //      r[i] = 0     indica que não há rainha nenhuma na linha i+1
 //
 // devolve r
+
+unsigned int ultima_linha = 0;
 
 int ehPossivel (unsigned int *r, unsigned int linha, unsigned int coluna, casa *c, unsigned int k) {
   for (unsigned int i = 0; i < linha; i++) {
@@ -34,33 +37,48 @@ int ehPossivel (unsigned int *r, unsigned int linha, unsigned int coluna, casa *
   return 1;
 }
 
-unsigned int acha_linha (unsigned int *r, unsigned int n) {
+unsigned int acha_linha (unsigned int *r, unsigned int n, unsigned int *linhas_impossiveis) {
   unsigned int i;
   for (i = 0; i < n; i++) {
-    if (r[i] == 0) {
+    if (r[i] == 0 && linhas_impossiveis[i] == 0) {
       return i;
     }
   }
   return n;
 }
 
-unsigned int *rainhas_bt(unsigned int n, unsigned int k, casa *c, unsigned int *r) {
-  unsigned int *aux, linha;
-  linha = acha_linha(r, n);
+unsigned int *rainhas_bt_wrapped(unsigned int n, unsigned int k, casa *c, unsigned int *r, unsigned int *linhas_impossiveis) {
+  unsigned int linha, *aux;
+  linha = acha_linha(r, n, linhas_impossiveis);
+  ultima_linha = linha;
   if (linha == n) {
     return r;
   }
   for (unsigned int i = 1; i <= n; i++) {
     if (ehPossivel(r, linha, i, c, k)) {
       r[linha] = i;
-      aux = rainhas_bt(n, k, c, r);
-      if (aux != NULL) {
+      aux = rainhas_bt_wrapped(n, k, c, r, linhas_impossiveis);
+      if (aux != NULL)
         return aux;
-      }
       r[linha] = 0;
     }
   }
+  if (linha == 0){
+    linhas_impossiveis[ultima_linha] = 1;
+    rainhas_bt_wrapped(n, k, c, r, linhas_impossiveis);
+  }
   return NULL;
+}
+
+unsigned int *rainhas_bt(unsigned int n, unsigned int k, casa *c, unsigned int *r) {
+  unsigned int *linhas_impossiveis = (unsigned int *) malloc(n * sizeof(unsigned int));
+  unsigned int *aux = r;
+  for (unsigned int i = 0; i < n; i++) {
+    linhas_impossiveis[i] = 0;
+  }
+  if (r = rainhas_bt_wrapped(n, k, c, r, linhas_impossiveis))
+    return r;
+  return aux;
 }
 //------------------------------------------------------------------------------
 // computa uma resposta para a instância (n,c) do problema das n
