@@ -24,16 +24,40 @@ static void mostra_resposta(unsigned int n, unsigned int *r) {
 
 static casa *proibe_diagonais(unsigned int n, casa *proibido) {
 
-  // proíbe todas as casas nas diagonais
-  for(unsigned int i = 0, p = 1; i < 2 * n; i+=2, p++) {
-
-    // diagonal "principal"
-    proibido[i].linha = proibido[i].coluna = p;
-
-    // "outra" diagonal
-    proibido[i+1].linha = p;
-    proibido[i+1].coluna = n - p + 1;
+  for (int i = 0; i<7; i++){
+    proibido[i].linha = 1;
+    proibido[i].coluna = i + 1;
   }
+  for (int i = 7; i<13; i++){
+    proibido[i].linha = 2;
+    proibido[i].coluna = i - 6;
+  }
+  for (int i = 13; i<18; i++){
+    proibido[i].linha = 3;
+    proibido[i].coluna = i - 12;
+  }
+  for (int i = 18; i<23; i++){
+    proibido[i].linha = 5;
+    proibido[i].coluna = i - 17;
+    proibido[i+5].linha = 6;
+    proibido[i+5].coluna = i - 17;
+    proibido[i+10].linha = 7;
+    proibido[i+10].coluna = i - 17;
+    proibido[i+15].linha = 8;
+    proibido[i+15].coluna = i - 17;
+  }
+
+
+  // proíbe todas as casas nas diagonais
+  // for(unsigned int i = 0, p = 1; i < 2 * n; i+=2, p++) {
+
+  //   // diagonal "principal"
+  //   proibido[i].linha = proibido[i].coluna = p;
+
+  //   // "outra" diagonal
+  //   proibido[i+1].linha = p;
+  //   proibido[i+1].coluna = n - p + 1;
+  // }
 
   return proibido + 2*n;
 }
@@ -41,13 +65,13 @@ static casa *proibe_diagonais(unsigned int n, casa *proibido) {
 //------------------------------------------------------------------------------
 int main (void) {
 
-  unsigned int n = 16;
+  unsigned int n = 8;
   unsigned int *resposta = malloc(n*sizeof(unsigned int));
 
-  unsigned int k = 2 * n;
+  unsigned int k = 38;
   casa *proibido = malloc(k*sizeof(casa));
   
-  proibe_diagonais(n, proibido);
+  proibe_diagonais(k, proibido);
 
   printf("backtracking: ");
   long int tempo_bt;

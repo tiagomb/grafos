@@ -1,161 +1,21 @@
 #include "rainhas.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+#include <string.h>
 
-struct conjunto {
-    int max;    /* tamanho maximo do vetor atualmente alocado     */
-    int card;   /* cardinalidade, isto eh, tamanho usado ate max  */
-    int ptr;    /* ponteiro para algum indice do vetor (iterador) */
-    casa *v;     /* vetor de casas com no maximo max elementos  */
-};
-typedef struct conjunto conjunto_t;
-
-conjunto_t *cria_cjt (int max){
-	conjunto_t* c;
-
-	if(!(c = malloc(sizeof(conjunto_t))))
-		return NULL;
-    
-    if(!(c->v = malloc(sizeof(casa)*max))){
-        return NULL;
-    }
-
-	c->max = max;
-	c->card = 0;
-
-	return c;
-}
-
-/*
- * Remove todos os elementos do conjunto, libera espaco e devolve NULL.
- */
-conjunto_t *destroi_cjt (conjunto_t *c){
-    free(c->v);
-    free(c);
-
-    return NULL;
-}
-
-/*
- * Retorna 1 se o conjunto esta vazio e 0 caso contrario.
- */
-int vazio_cjt (conjunto_t *c){
-    if (c->card == 0)
-        return 1;
-    
-    return 0;
-}
-
-/*
- * Retorna a cardinalidade do conjunto, isto eh, o numero de elementos presentes nele.
- */
-int cardinalidade_cjt (conjunto_t *c){
-    int cardinalidade;
-    cardinalidade = c->card;
-
-    return cardinalidade;
-}
-
-
-/*
- * Insere o elemento no conjunto, garante que nao existam repeticoes.
- * Retorna 1 se a operacao foi bem sucedida. Se tentar inserir elemento existente,
- * nao faz nada e retorna 1 tambem. Retorna 0 em caso de falha por falta de espaco.
- */
-int insere_cjt (conjunto_t *c, casa elemento){
-    int i;
-    i = c->card;
-
-    if (c->card >= c->max)
-        return 0;
-
-    if ((pertence_cjt(c, elemento)))
-        return 1;
-
-    *(c->v+i) = elemento;
-    c->card++;
-
-    return 1;
-}
-
-/*
- * Retorna a posicao do elemento se o elemento pertence ao conjunto e cardinalidade + 1 caso contrario.
- */
-int posicao_no_cjt (conjunto_t *c, casa elemento){
-    int i;
-
-    for (i = 0; i < c->card; i++)
-        if (c->v[i].linha == elemento.linha && c->v[i].coluna == elemento.coluna)
-            return i;
-        
-    return c->card + 1;
-}
-
-/*
- * Remove o elemento 'elemento' do conjunto caso ele exista.
- * Retorna 1 se a operacao foi bem sucedida e 0 se o elemento nao existe.
- */
-int retira_cjt (conjunto_t *c, casa elemento){
-    int i;
-
-	if(!(pertence_cjt(c, elemento)))
-		return 0;
-
-	for(i = posicao_no_cjt(c, elemento); i < c->card; i++)
-			*(c->v+i) = *(c->v+i+1);
-	
-	c->card--;
-
-	return 1;
-}
-
-/*
- * Retorna 1 se o elemento pertence ao conjunto e 0 caso contrario.
- */
-int pertence_cjt (conjunto_t *c, casa elemento){
-    int i;
-
-    for(i = 0; i < c->card; i++)
-        if (c->v[i].linha == elemento.linha && c->v[i].coluna == elemento.coluna)
-            return 1;
-
-    return 0;
-}
-
-
-/*
- * Cria e retorna o conjunto diferenca entre c1 e c2, nesta ordem.
- * Retorna NULL se a operacao falhou.
- */
-conjunto_t *diferenca_cjt (conjunto_t *c1, conjunto_t *c2){
-    int i, elemento;
-    conjunto_t* diferenca;
-    diferenca = cria_cjt(c1->max);
-
-    if (diferenca == NULL)
-        return NULL;
-
-    for (i = 0; i < c1->card; i++){
-        elemento = *(c1->v+i);
-        if (!(pertence_cjt(c2, elemento))){
-            insere_cjt(diferenca, elemento);
+unsigned int *remove_vizinhos(unsigned int *conjunto, casa c, unsigned int n){
+    unsigned int *diferenca = (unsigned int *) malloc(n*n * sizeof(unsigned int));
+    memcpy(diferenca, conjunto, n*n*sizeof(unsigned int));
+    for (unsigned int i = 0; i < n*n; i++){
+        if (i % n == c.coluna - 1 || i / n == c.linha || i % n + i / n == c.coluna + c.linha - 1 || i % n - i / n == c.coluna - c.linha - 1){
+            diferenca[i] = 1;
         }
     }
     return diferenca;
 }
 
-/*
- * Escolhe um elemento qualquer do conjunto para ser removido, o remove e
- * o retorna.
- * Nao faz teste se conjunto eh vazio, deixa para main fazer isso       
- */
-casa retira_um_elemento_cjt (conjunto_t *c){
-    casa x = c->v[rand() % c->card];
-    retira_cjt(c, x->linha, x->coluna);
-    return x;
-}
-
-//------------------------------------------------------------------------------
+//--------------------------------------------------------------  ----------------
 // computa uma resposta para a instância (n,c) do problema das n rainhas 
 // com casas proibidas usando backtracking
 //
@@ -168,8 +28,6 @@ casa retira_um_elemento_cjt (conjunto_t *c){
 //      r[i] = 0     indica que não há rainha nenhuma na linha i+1
 //
 // devolve r
-
-unsigned int ultima_linha = 0;
 
 int ehPossivel (unsigned int *r, unsigned int linha, unsigned int coluna, casa *c, unsigned int k) {
   for (unsigned int i = 0; i < linha; i++) {
@@ -190,48 +48,103 @@ int ehPossivel (unsigned int *r, unsigned int linha, unsigned int coluna, casa *
   return 1;
 }
 
-unsigned int acha_linha (unsigned int *r, unsigned int n, unsigned int *linhas_impossiveis) {
-  unsigned int i;
-  for (i = 0; i < n; i++) {
-    if (r[i] == 0 && linhas_impossiveis[i] == 0) {
-      return i;
+casa acha_linha_conjunto (unsigned int *conjunto, unsigned int n){
+  for (unsigned int i = 0; i < n; i++){
+    for (unsigned int j = 0; j < n; j++){
+      if (conjunto[i*n +j] == 0){
+        conjunto[i*n + j] = 1;
+        return (casa) {i, j + 1};
+      }
+    }
+  }
+  return (casa) {n, n + 1};
+
+}
+
+unsigned int retorna_tamanho_conjunto(unsigned int *conjunto, unsigned int n){
+  unsigned int tamanho = 0;
+  for (unsigned int i = 0; i < n; i++){
+      if (conjunto[i] == 0){
+        tamanho++;
+      }
+  }
+  return tamanho;
+}
+
+unsigned int retorna_tamanho(unsigned int *r, unsigned int n){
+  unsigned int tamanho = 0;
+  for (unsigned int i = 0; i < n; i++){
+      if (r[i]){
+        tamanho++;
+      }
+  }
+  return tamanho;
+}
+
+unsigned int retorna_linha(unsigned int *r, unsigned int n, unsigned int *tabuleiro) {
+  for (unsigned int i = 0; i < n; i++) {
+    if (r[i] == 0) {
+      for (unsigned int j = 0; j < n; j++) {
+        if (tabuleiro[i * n + j] == 0) 
+          return i;
+      }
     }
   }
   return n;
 }
 
-unsigned int *rainhas_bt_wrapped(unsigned int n, unsigned int k, casa *c, unsigned int *r, unsigned int *linhas_impossiveis) {
-  unsigned int linha, *aux;
-  linha = acha_linha(r, n, linhas_impossiveis);
-  ultima_linha = linha;
+unsigned int rainhas_bt_wrapped(unsigned int n, unsigned int k, casa *c, unsigned int *r, unsigned int *tabuleiro) {
+  unsigned int linha, aux;
+  linha = retorna_linha(r, n, tabuleiro);
   if (linha == n) {
-    return r;
+    return 1;
   }
   for (unsigned int i = 1; i <= n; i++) {
     if (ehPossivel(r, linha, i, c, k)) {
       r[linha] = i;
-      aux = rainhas_bt_wrapped(n, k, c, r, linhas_impossiveis);
-      if (aux != NULL)
+      aux = rainhas_bt_wrapped(n, k, c, r, tabuleiro);
+      if (aux)
         return aux;
       r[linha] = 0;
     }
   }
-  if (linha == 0){
-    linhas_impossiveis[ultima_linha] = 1;
-    rainhas_bt_wrapped(n, k, c, r, linhas_impossiveis);
-  }
-  return NULL;
+  return 0;
 }
 
 unsigned int *rainhas_bt(unsigned int n, unsigned int k, casa *c, unsigned int *r) {
-  unsigned int *linhas_impossiveis = (unsigned int *) malloc(n * sizeof(unsigned int));
-  unsigned int *aux = r;
-  for (unsigned int i = 0; i < n; i++) {
-    linhas_impossiveis[i] = 0;
+  unsigned int *tabuleiro = (unsigned int *) calloc(n*n, sizeof(unsigned int));
+  unsigned int contadorcol = 0, contadorlin = 0;
+  for (unsigned int i = 0; i < k; i++){
+    tabuleiro[(c[i].linha - 1) * n + c[i].coluna - 1] = 1;
   }
-  if (r = rainhas_bt_wrapped(n, k, c, r, linhas_impossiveis))
-    return r;
-  return aux;
+  for (unsigned int i = 0; i < n; i++) {
+    unsigned int contcol = 0, contlin = 0;
+    r[i] = 0;
+    for (unsigned int j = 0; j < n; j++) {
+      if (tabuleiro[j * n + i]) {
+        contcol++;
+      }
+      if (tabuleiro[i * n + j]) {
+        contlin++;
+      }
+    }
+    if (contcol == n){
+      contadorcol++;
+    }
+    if (contlin == n){
+      contadorlin++;
+    }
+  }
+  if (contadorcol > contadorlin){
+    for (unsigned int i = 1; i <= contadorcol - contadorlin; i++){
+      for (unsigned int j = 0; j < n; j++){
+        tabuleiro[i*n + j] = 1;
+      }
+    }
+  }
+  rainhas_bt_wrapped(n, k, c, r, tabuleiro);
+  free(tabuleiro);
+  return r; 
 }
 //------------------------------------------------------------------------------
 // computa uma resposta para a instância (n,c) do problema das n
@@ -240,33 +153,62 @@ unsigned int *rainhas_bt(unsigned int n, unsigned int k, casa *c, unsigned int *
 //
 // n, c e r são como em rainhas_bt()
 
-unsigned int* conj_independente(int **matriz_adjacencia, conjunto_t *ind, conjunto_t *ind_aux, unsigned int n, unsigned int k, casa *c, unsigned int *r){
-  unsigned int *aux;
-  casa x;
-  if (cardinalidade_cjt(ind) == n){
-    return r;
+unsigned int rainhas_ci_wrapped(unsigned int *conjunto, unsigned int n, unsigned int *r, unsigned int *tabuleiro) {
+  unsigned int aux;
+  unsigned int *aux_conjunto;
+  unsigned int tamanho  = retorna_linha(r, n, tabuleiro);
+  unsigned int tamanho_conjunto = retorna_tamanho_conjunto(conjunto, n * n);
+  if (tamanho == n){
+    return 1;
   }
-  if (cardinalidade_cjt(ind) + cardinalidade_cjt(ind_aux) < n){
-    return NULL;
+  if (tamanho_conjunto + tamanho < n){
+    return 0;
   }
-  x = retira_um_elemento_cjt(ind_aux);
-  aux = conj_independente(matriz_adjacencia, insere_cjt(ind, x), ind_aux, n, k, c, r);
+  casa c = acha_linha_conjunto(conjunto, n);
+  r[c.linha] = c.coluna;
+  aux_conjunto = remove_vizinhos(conjunto, c, n);
+  aux = rainhas_ci_wrapped(aux_conjunto, n, r, tabuleiro);
+  free(aux_conjunto);
+  if (aux) {
+    return aux;
+  }
+  r[c.linha] = 0;
+  return rainhas_ci_wrapped(conjunto, n, r, tabuleiro);
 }
 
 
 unsigned int *rainhas_ci(unsigned int n, unsigned int k, casa *c, unsigned int *r) {
-  int **matriz_adjacencia = malloc(n * sizeof(int *));
-  conjunto_t *ind = cria_cjt(n);
-  conjunto_t *ind_aux = cria_cjt(n*n);
-  for (int i = 0; i < n; i++) {
-    matriz_adjacencia[i] = (int *) malloc(n * sizeof(int));
-    for (int j = 0; j < n; j++) {
-      matriz_adjacencia[i][j] = 0;
-      insere_cjt(ind, (casa) {i + 1, j + 1});
+  unsigned int contadorcol = 0, contadorlin = 0;
+  unsigned int *conjunto = (unsigned int *) calloc(n * n, sizeof(unsigned int));
+  for (unsigned int i = 0; i < k; i++){
+    conjunto[(c[i].linha - 1) * n + c[i].coluna - 1] = 1;
+  }
+  for (unsigned int i = 0; i < n; i++) {
+    unsigned int contcol = 0, contlin = 0;
+    r[i] = 0;
+    for (unsigned int j = 0; j < n; j++) {
+      if (conjunto[j * n + i]) {
+        contcol++;
+      }
+      if (conjunto[i * n + j]) {
+        contlin++;
+      }
+    }
+    if (contcol == n){
+      contadorcol++;
+    }
+    if (contlin == n){
+      contadorlin++;
     }
   }
-  for (int i = 0; i < k; i++) {
-    matriz_adjacencia[c[i].linha - 1][c[i].coluna - 1] = -1;
-    retira_cjt(ind, (casa) {c[i].linha, c[i].coluna});
+  if (contadorcol > contadorlin){
+    for (unsigned int i = 1; i <= contadorcol - contadorlin; i++){
+      for (unsigned int j = 0; j < n; j++){
+        conjunto[i*n + j] = 1;
+      }
+    }
   }
+  rainhas_ci_wrapped(conjunto, n, r, conjunto);
+  free(conjunto);
+  return r;
 }
