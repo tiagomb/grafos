@@ -24,18 +24,21 @@ static void mostra_resposta(unsigned int n, unsigned int *r) {
 
 static casa *proibe_diagonais(unsigned int n, casa *proibido) {
 
-
-  // proíbe todas as casas nas diagonais
-  for(unsigned int i = 0, p = 1; i < 2 * n; i+=2, p++) {
-    // diagonal "principal"
-    proibido[i].linha = proibido[i].coluna = p;
-
-    // "outra" diagonal
-    proibido[i+1].linha = p;
-    proibido[i+1].coluna = n - p + 1;
+  for (int i = 0; i < n; i++){
+    proibido[i].linha = 10;
+    proibido[i].coluna = i+1;
   }
+  // // proíbe todas as casas nas diagonais
+  // for(unsigned int i = 0, p = 1; i < 2 * n; i+=2, p++) {
+  //   // diagonal "principal"
+  //   proibido[i].linha = proibido[i].coluna = p;
 
-  return proibido + 2*n;
+  //   // "outra" diagonal
+  //   proibido[i+1].linha = p;
+  //   proibido[i+1].coluna = n - p + 1;
+  // }
+
+  // return proibido + 2*n;
 }
 
 //------------------------------------------------------------------------------
@@ -44,7 +47,7 @@ int main (void) {
   unsigned int n = 16;
   unsigned int *resposta = malloc(n*sizeof(unsigned int));
 
-  unsigned int k = 2*n;
+  unsigned int k = n;
   casa *proibido = malloc(k*sizeof(casa));
   
   proibe_diagonais(n, proibido);
