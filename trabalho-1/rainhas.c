@@ -27,21 +27,17 @@ unsigned int rainhas_bt_wrapped(unsigned int n, unsigned int k, casa *c, unsigne
   if (linha == n){
     return 1;
   }
-  while (cont){
-    for (unsigned int i = 1; i <= n; i++){
-      if (ehPossivel(r, linha, i, c, k)){
-        r[linha] = i;
-        if (rainhas_bt_wrapped(n, k, c, r, linha + 1, cont)){
-          return 1;
-        }
-        r[linha] = 0;
+  for (unsigned int i = 1; i <= n; i++){
+    if (ehPossivel(r, linha, i, c, k)){
+      r[linha] = i;
+      if (rainhas_bt_wrapped(n, k, c, r, linha + 1, cont)){
+        return 1;
       }
+      r[linha] = 0;
     }
-    cont--;
-    linha++;
-    if (linha == n){
-      return 0;
-    }
+  }
+  if (cont){
+    return rainhas_bt_wrapped(n, k, c, r, linha + 1, cont - 1);
   }
   return 0;
 }
@@ -118,16 +114,16 @@ unsigned int rainhas_ci_wrapped(unsigned int n, unsigned int k, casa *c, unsigne
         return 1;
     }
     int tamanhot = retorna_tamanho(tabuleiro, n*n);
-    if (n*n - tamanhot + linha < n){
+    if (n*n - tamanhot + linha < n - cont){
         return 0;
     }
-    casa aux = retorna_primeiro(tabuleiro, n);
+    casa aux = retorna_primeiro(tabuleiro, n); 
     while (aux.linha > linha && cont){
-        cont --;
+        cont--;
         linha++;
     }
-    if (aux.linha > linha){
-        return 0;
+    if (linha == n){
+        return 1;
     }
     r[aux.linha] = aux.coluna;
     unsigned int *tabuleiro_aux = remove_vizinhos(tabuleiro, aux, n);
