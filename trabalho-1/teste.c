@@ -90,5 +90,6 @@ int main (void) {
   todos_os_testes(tabuleiro, n, 0, 0, resposta, arq);
   free(resposta);
   free(tabuleiro);
+  fclose(arq);
   return 0;
 }

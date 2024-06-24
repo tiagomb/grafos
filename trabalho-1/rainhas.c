@@ -128,6 +128,7 @@ unsigned int rainhas_ci_wrapped(unsigned int n, unsigned int k, casa *c, unsigne
     r[aux.linha] = aux.coluna;
     unsigned int *tabuleiro_aux = remove_vizinhos(tabuleiro, aux, n);
     if (rainhas_ci_wrapped(n, k, c, r, tabuleiro_aux, linha + 1, cont)){
+        free(tabuleiro_aux);
         return 1;
     }
     free(tabuleiro_aux);
@@ -148,10 +149,12 @@ unsigned int *rainhas_ci(unsigned int n, unsigned int k, casa *c, unsigned int *
   for (unsigned int i = 0; i < n; i++){
     if (rainhas_ci_wrapped(n, k, c, r, tabuleiro, 0, i)){
       free(tabuleiro);
+      free(aux);
       return r;
     }
     memcpy(tabuleiro, aux, n*n*sizeof(unsigned int));
   }
   free(tabuleiro);
+  free(aux);
   return r;
 }
