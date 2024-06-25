@@ -57,7 +57,7 @@ unsigned int *rainhas_bt(unsigned int n, unsigned int k, casa *c, unsigned int *
 int retorna_tamanho(unsigned int *vetor, unsigned int n){
     int tamanho = 0;
     for (unsigned int i = 0; i < n; i++){
-        if (vetor[i] != 0){
+        if (vetor[i] == 0){
             tamanho++;
         }
     }
@@ -73,9 +73,9 @@ void marca_vizinhos(unsigned int *tabuleiro, unsigned int n, unsigned int linha,
     }
 }
 
-casa retorna_primeiro(unsigned int *tabuleiro, unsigned int n){
+casa retorna_primeiro(unsigned int *tabuleiro, unsigned int n, unsigned int linha){
     casa c;
-    for (unsigned int i = 0; i < n*n; i++){
+    for (unsigned int i = n*linha; i < n*n; i++){
         if (tabuleiro[i] == 0){
             tabuleiro[i] = 1;
             c.linha = i / n;
@@ -114,16 +114,19 @@ unsigned int rainhas_ci_wrapped(unsigned int n, unsigned int k, casa *c, unsigne
         return 1;
     }
     int tamanhot = retorna_tamanho(tabuleiro, n*n);
-    if (n*n - tamanhot + linha < n - cont){
+    if (tamanhot + linha < n - cont){
         return 0;
     }
-    casa aux = retorna_primeiro(tabuleiro, n); 
-    while (aux.linha > linha && cont){
+    casa aux = retorna_primeiro(tabuleiro, n, linha);
+    if (aux.linha > linha + cont){
+        return 0;
+    }
+    if (aux.linha == n){
+        return 1;
+    }
+    while (aux.linha > linha){
         cont--;
         linha++;
-    }
-    if (linha == n){
-        return 1;
     }
     r[aux.linha] = aux.coluna;
     unsigned int *tabuleiro_aux = remove_vizinhos(tabuleiro, aux, n);
