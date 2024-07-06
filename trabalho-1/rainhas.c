@@ -4,6 +4,20 @@
 #include <time.h>
 #include <string.h>
 
+int ehPossivel (unsigned int *r, unsigned int linha, unsigned int coluna, casa *c, unsigned int k);
+
+unsigned int rainhas_bt_wrapped(unsigned int n, unsigned int k, casa *c, unsigned int *r, unsigned int linha, unsigned int cont);
+
+unsigned int retorna_tamanho(unsigned int *vetor, unsigned int n);
+
+casa retorna_primeiro(unsigned int *tabuleiro, unsigned int n, unsigned int linha);
+
+void imprime_tabuleiro(unsigned int *tabuleiro, unsigned int n);
+
+unsigned int *remove_vizinhos(unsigned int *conjunto, casa c, unsigned int n);
+
+unsigned int rainhas_ci_wrapped(unsigned int n, unsigned int k, casa *c, unsigned int *r, unsigned int *tabuleiro, unsigned int linha, unsigned int cont);
+
 int ehPossivel (unsigned int *r, unsigned int linha, unsigned int coluna, casa *c, unsigned int k) {
   for (unsigned int i = 0; i < linha; i++) {
     if (r[i] == coluna) {
@@ -54,23 +68,14 @@ unsigned int *rainhas_bt(unsigned int n, unsigned int k, casa *c, unsigned int *
   return r;
 }
 
-int retorna_tamanho(unsigned int *vetor, unsigned int n){
-    int tamanho = 0;
+unsigned int retorna_tamanho(unsigned int *vetor, unsigned int n){
+    unsigned int tamanho = 0;
     for (unsigned int i = 0; i < n; i++){
         if (vetor[i] == 0){
             tamanho++;
         }
     }
     return tamanho;
-}
-
-void marca_vizinhos(unsigned int *tabuleiro, unsigned int n, unsigned int linha, unsigned int coluna, unsigned int marcador){
-    tabuleiro[linha * n + coluna - 1] = 1;
-    for (unsigned int i = 0; i < n*n; i++){
-        if (i % n == coluna - 1 || i / n == linha || i % n + i / n == coluna + linha - 1 || i % n - i / n == coluna - linha - 1){
-            tabuleiro[i] = marcador;
-        }
-    }
 }
 
 casa retorna_primeiro(unsigned int *tabuleiro, unsigned int n, unsigned int linha){
@@ -113,7 +118,7 @@ unsigned int rainhas_ci_wrapped(unsigned int n, unsigned int k, casa *c, unsigne
     if (linha == n){
         return 1;
     }
-    int tamanhot = retorna_tamanho(tabuleiro, n*n);
+    unsigned int tamanhot = retorna_tamanho(tabuleiro, n*n);
     if (tamanhot + linha < n - cont){
         return 0;
     }
@@ -145,7 +150,7 @@ unsigned int *rainhas_ci(unsigned int n, unsigned int k, casa *c, unsigned int *
   }
   unsigned int *tabuleiro = calloc(n * n, sizeof(unsigned int));
   unsigned int *aux = calloc(n * n, sizeof(unsigned int));
-  for (int i = 0; i < k; i++){
+  for (unsigned int i = 0; i < k; i++){
     tabuleiro[(c[i].linha - 1) * n + c[i].coluna - 1] = 1;
     aux[(c[i].linha - 1) * n + c[i].coluna - 1] = 1;
   }
